@@ -16,4 +16,4 @@ PULL_REQUEST=$1
 git fetch origin
 git branch $USER_STORY master
 git checkout $USER_STORY
-git merge origin pr/$PULL_REQUEST -m "merged to test" 
+git merge  pr/$PULL_REQUEST -m "merged to test"
