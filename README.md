@@ -1,3 +1,7 @@
+This simple script will parse every open pull request in a GitHub repository. It will check if the build is successful
+and anybody has reviewed and approved the code.
+If your company
+
 This great Tool has been developed between several guys:
 =====
 Adrià Cidre, https://github.com/adriacidre
