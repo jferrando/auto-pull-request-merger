@@ -1,5 +1,11 @@
 <?php
-class GitHubCurl implements GitHubHttpClient {
+namespace Library\GitHub;
+
+/**
+ * class used to wrap curl
+ */
+class GitHubCurl implements GitHubHttpClientInterface
+{
 
     public $user;
     public $pass;
@@ -11,12 +17,21 @@ class GitHubCurl implements GitHubHttpClient {
     public $errorMessage;
     public $httpCode;
 
-    public function request($requestType, $url, $params) {
+    /**
+     * @param string $requestType
+     * @param string $url
+     * @param array  $params
+     *
+     * @return mixed
+     * @throws GitHubCommonException
+     */
+    public function request($requestType, $url, $params)
+    {
         $query = utf8_encode(http_build_query($params, '', '&'));
 
         $set = array();
 
-        if($requestType == 'GET') {
+        if ($requestType == 'GET') {
             $url = $url . '?' . $query;
         } else {
             $set += array(CURLOPT_POSTFIELDS => json_encode($params));

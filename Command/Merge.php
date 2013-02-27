@@ -1,6 +1,7 @@
 <?php
+namespace Command;
 
-
+use \Library\GitHub;
 
 /**
  * this is the basic class used to check our pull requests
@@ -23,6 +24,15 @@ class Merge
     protected $_client;
 
 
+    protected $config;
+
+
+    public function __construct($configFile)
+    {
+        $this->config = new \Library\Config($configFile);
+    }
+
+
     /**
      * Execution
      *
@@ -33,7 +43,7 @@ class Merge
 
         $startTime = microtime(true);
 
-        GitHubAutoloader::getInstance();
+//        \Library\GitHub\GitHubAutoloader::getInstance();
 
         if (!empty($user)) {
             $this->user = $user;
@@ -51,12 +61,12 @@ class Merge
         }
 
 
-        $this->_client = new GitHubApi(new  GitHubCurl());
+        $this->_client = new \Library\GitHub\GitHubApi(new  \Library\GitHub\GitHubCurl());
 
         $this->_client->auth(
             $this->user,
             $this->password,
-            GitHubApi::AUTH_HTTP
+            \Library\GitHub\GitHubApi::AUTH_HTTP
         );
         $requestsList = $this->_getOpenPullRequests();
         for ($i = count($requestsList) - 1; $i >= 0; $i--) {
