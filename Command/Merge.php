@@ -2,7 +2,7 @@
 namespace Command;
 
 use \Library\GitHub;
-use \Library;
+use \Config;
 
 /**
  * this is the basic class used to check our pull requests
@@ -17,7 +17,7 @@ class Merge
 
     public function __construct($configFile)
     {
-        $this->config = new \Library\Config($configFile);
+        $this->config = new \Config\Config($configFile);
     }
 
 

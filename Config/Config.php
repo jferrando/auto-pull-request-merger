@@ -1,6 +1,6 @@
 <?php
 
-namespace Library;
+namespace Config;
 
 use Symfony\Component\Yaml\Parser;
 
