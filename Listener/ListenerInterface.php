@@ -1,6 +1,6 @@
 <?php
 
-namespace Listeners;
+namespace Listener;
 
 interface ListenerInterface
 {

@@ -8,8 +8,9 @@ class ListenerHipChat implements ListenerInterface
 
     public function eventList()
     {
+        // array ("eventName" => "methodToExecute"
         return array(
-            "too_many_open_pull_requests" => call_user_func(array(__CLASS__, 'tooManyOpenPullRequests'), null)
+            "too_many_open_pull_requests" => 'tooManyOpenPullRequests'
         );
     }
 
@@ -29,8 +30,8 @@ class ListenerHipChat implements ListenerInterface
         $msg
     ) {
         try {
-            $hc = new LibraryHipChat(self::HIPCHAT_TOKEN);
-            $hc->message_room('work', 'Pull-Requester', $msg, false, HipChat::COLOR_RED);
+            $hc = new \Library\HipChat\HipChat(\App::Config()->get("hipchat_token"));
+            $hc->message_room('work', 'Pull-Requester', $msg, false, \Library\Hipchat\HipChat::COLOR_RED);
         } catch (\Exception $e) {
             echo "\n HIPCHAT API NOT RESPONDING \n";
             echo "$e \n";

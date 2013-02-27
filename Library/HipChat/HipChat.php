@@ -1,6 +1,6 @@
 <?php
 
-namespace HipChat;
+namespace Library\HipChat;
 
 /**
  * Library for interacting with the HipChat REST API.

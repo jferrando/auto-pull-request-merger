@@ -1,5 +1,5 @@
 <?php
-namespace App;
+
 require_once './vendor/autoload.php';
 
 
@@ -57,7 +57,6 @@ class App
                 throw new Exception("event $event does not exist");
             }
         }
-        echo "registering $event for $module and $method\n";
         self::$listener[$event][$module] = $method;
     }
 
@@ -66,7 +65,6 @@ class App
     {
         echo $event."\n";
         if (isset(self::$listener[$event])) {
-            echo "event $event defined\n";
             foreach (self::$listener[$event] as $class => $method) {
                 $obj = new $class;
                 call_user_func(array($obj, $method), null);
