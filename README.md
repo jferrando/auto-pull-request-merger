@@ -4,7 +4,6 @@ Adrià Cidre, https://github.com/adriacidre
 Natxo Treig, https://github.com/natxetee
 and myself
 
-
 USAGE:
 
 php mergePullRequest.php \<GitHubUser\> \<GitHubPassword\> \<owner\> \<repo\>
