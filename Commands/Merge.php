@@ -7,12 +7,14 @@
  */
 class Merge
 {
+    const FORCE_BUILD_CONFIRMATION = false; // true if you want to ensure your CI suite marked this PR as stable
     const MAX_OPEN_PULL_REQUESTS = 25;
     const HIPCHAT_TOKEN = 'e1'; // this is the hipchat token of the room you want to be notified
     const REQUIRED_POSITIVE_REVIEWS = 1; // this is the number of positive reviews you require to merge the pull request
 
-    protected $validPositiveReviewMessages = array(":+1:", "+1");
-    protected $validBlockerMessages = array("[B]", "[b]");
+    protected $validPositiveCodeReviewMessages = array(":+1:", "+1");
+    protected $validBlockerCodeReviewMessages = array("[B]", "[b]");
+    protected $validUatOKMessages = array("UAT OK");
 
     protected $user = "myUser";
     protected $password = "myPass";
@@ -166,33 +168,65 @@ class Merge
      *
      * @param array  $comments
      * @param string $sha
-     * @param int    $number
+     * @param int    $pullRequestNumber
      *
      * @return bool
      */
-    protected function _canBeMerged($comments, $sha, $number)
+    protected function _canBeMerged($comments, $sha, $pullRequestNumber)
+    {
+        $passedCodeReview = $this->_passedCodeReview($comments, $sha, $pullRequestNumber);
+        if ($passedCodeReview) {
+            $this->_prepareTestingEnvironment($pullRequestNumber);
+            if ($this->_passedUAT($comments)) {
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    protected function _prepareTestingEnvironment($pullRequestNumber)
+    {
+        // TODO prepare the environment
+        // basic version, only checkout the code
+        $jiraIssueNumber = $this->_findJiraIssueNumber($pullRequestNumber);
+        if (!$jiraIssueNumber) {
+            $jiraIssueNumber = "pull-request-$pullRequestNumber";
+            echo "cannot find jira issue number for PR $pullRequestNumber, we use a fake branch name";
+        }
+        $shellCommand = "./prepareTestEnv.sh $pullRequestNumber $jiraIssueNumber";
+        echo "Preparing local branch $jiraIssueNumber merging master branch with pull request $pullRequestNumber";
+        shell_exec($shellCommand);
+    }
+
+    protected function _passedUAT($comments)
+    {
+        // TODO : check if there is a test ok message
+        foreach ($comments as $comment) {
+            if ($this->_isAUatOK($comment)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function _passedCodeReview($comments, $sha, $pullRequestNumber)
     {
         $pluses = 0;
         $blocker = false;
-        if (!$this->_isBuildOk($sha)) {
-//          $this->_addCommentToPullRequest($number,'Build failed');
-            echo("Will not merge pull request $number, no build success confirmation message \n");
+        if (!$this->_isBuildOk($sha) and self::FORCE_BUILD_CONFIRMATION) {
+            echo("Pull request $pullRequestNumber has no build success confirmation message \n");
 
             return false;
         }
 
         foreach ($comments as $comment) {
-            // parse and count approvals
-            foreach ($this->validPositiveReviewMessages as $positiveMessage) {
-                if (false !== strpos($comment->body, $positiveMessage)) {
-                    ++$pluses;
-                    $blocker = false;
-                }
-            }
-            // parse refusals
-            foreach ($this->validBlockerMessages as $blockerMessage) {
-                if (false !== strpos($comment->body, $blockerMessage)
-                ) {
+            if ($this->_isACodeReviewOK($comment)) {
+                ++$pluses;
+                $blocker = false;
+            } else {
+                if ($this->_isACodeReviewKO($comment)) {
                     echo("Blocker found\n");
 
                     $blocker = true;
@@ -205,11 +239,12 @@ class Merge
             return true;
         }
 
-//  enable the next line if you want the script to notify you on the hipchat Room
-//        $this->_addCommentToPullRequest($number,"Will not merge pull request $number,only $pluses positive reviews");
-        echo("Will not merge pull request $number,only $pluses positive reviews\n");
+        $this->_addCommentToPullRequest(
+            $pullRequestNumber,
+            "Will not merge pull request $pullRequestNumber,only $pluses positive reviews"
+        );
+        echo("Pull request $pullRequestNumber has only $pluses positive reviews\n");
 
-        return false;
     }
 
 
@@ -219,8 +254,10 @@ class Merge
      *
      * @return bool
      */
-    protected function _isBuildOk($sha)
-    {
+    protected
+    function _isBuildOk(
+        $sha
+    ) {
         $response = $this->_client->get(
             '/repos/:owner/:repo/statuses/:sha',
             array(
@@ -240,8 +277,11 @@ class Merge
      * @param integer $number
      * @param string  $message
      */
-    protected function _addCommentToPullRequest($number, $message)
-    {
+    protected
+    function _addCommentToPullRequest(
+        $number,
+        $message
+    ) {
         $this->_client->post(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
@@ -262,8 +302,10 @@ class Merge
      *
      * @return null
      */
-    protected function _sendMessage($msg)
-    {
+    protected
+    function _sendMessage(
+        $msg
+    ) {
         try {
             $hc = new HipChat(self::HIPCHAT_TOKEN);
             $hc->message_room('work', 'Pull-Requester', $msg, false, HipChat::COLOR_RED);
@@ -271,6 +313,68 @@ class Merge
             echo "\n HIPCHAT API NOT RESPONDING \n";
             echo "$e \n";
         }
+    }
+
+    protected function _findJiraIssueNumber($pullRequestNumber)
+    {
+
+        $jiraIssue = null;
+        try {
+            $prs = $this->_client->get(
+                '/repos/:owner/:repo/pulls/:number',
+                array(
+                    'owner' => $this->owner,
+                    'repo' => $this->repo,
+                    'number' => $pullRequestNumber
+                )
+            );
+            $title = $prs->title;
+            if (preg_match("/\#[A-Za-z]+\-[0-9]+/", $title, $matches)) {
+                $jiraIssue = $matches[0];
+            }
+        } catch (GitHubCommonException $e) {
+            echo "Exception: $e , request: /repos/" . $this->owner . "/" . $this->repo . "/pulls/" . $pullRequestNumber . "/";
+        }
+        $jiraIssue = trim($jiraIssue, "#");
+
+        return $jiraIssue;
+
+    }
+
+    private function _isACodeReviewOK($comment)
+    {
+        foreach ($this->validPositiveCodeReviewMessages as $positiveMessage) {
+            if (false !== strpos($comment->body, $positiveMessage)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function _isACodeReviewKO($comment)
+    {
+
+        foreach ($this->validBlockerCodeReviewMessages as $blockerMessage) {
+            if (false !== strpos($comment->body, $blockerMessage)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function _isAUatOK($comment)
+    {
+        foreach ($this->validUatOKMessages as $uatOKMessage) {
+            if (false !== strpos(strtolower($comment->body), strtolower($uatOKMessage))
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
