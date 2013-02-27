@@ -152,7 +152,7 @@ class Merge
         } catch (\Exception $e) {
             $ex = json_decode($e->getMessage());
             $this->_addCommentToPullRequest($number, $ex->message);
-            echo("Can't merge $number\n");
+            echo("Cannot merge $number\n");
 
         }
 
@@ -182,7 +182,7 @@ class Merge
         }
 
         foreach ($comments as $comment) {
-            // parse and count aprovals
+            // parse and count approvals
             foreach ($this->validPositiveReviewMessages as $positiveMessage) {
                 if (false !== strpos($comment->body, $positiveMessage)) {
                     ++$pluses;
@@ -268,8 +268,8 @@ class Merge
             $hc = new HipChat(self::HIPCHAT_TOKEN);
             $hc->message_room('work', 'Pull-Requester', $msg, false, HipChat::COLOR_RED);
         } catch (\Exception $e) {
-            echo "\nHIPCHAT API NOT RESPONDING\n";
-            echo "$e\n";
+            echo "\n HIPCHAT API NOT RESPONDING \n";
+            echo "$e \n";
         }
     }
 
