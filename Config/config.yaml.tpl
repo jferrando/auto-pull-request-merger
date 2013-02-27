@@ -21,3 +21,10 @@ github_user: 'myUser'
 github_password: 'myPass'
 github_repository_owner: 'Company'
 github_repository_name: 'repo'
+
+
+# events thrown by the application
+system_events: ['cannot_merge_pull_request','pull_request_merged','too_many_open_pull_requests','no_pull_requests_to_parse']
+
+# listeners defined in the system
+listeners: ['Listener\ListenerHipChat']
