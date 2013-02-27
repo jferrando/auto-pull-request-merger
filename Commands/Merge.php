@@ -9,8 +9,10 @@ class Merge
 {
     const MAX_OPEN_PULL_REQUESTS = 25;
     const HIPCHAT_TOKEN = 'e1'; // this is the hipchat token of the room you want to be notified
-    const REQUIRED_POSITIVE_REVIEWS = 1;
+    const REQUIRED_POSITIVE_REVIEWS = 1; // this is the number of positive reviews you require to merge the pull request
 
+    protected $validPositiveReviewMessages = array(":+1:", "+1");
+    protected $ValidBlockerMessages = array("[B]", "[b]");
 
     protected $user = "myUser";
     protected $password = "myPass";
@@ -180,23 +182,26 @@ class Merge
         }
 
         foreach ($comments as $comment) {
-            if (
-                false !== strpos($comment->body, '+1') ||
-                false !== strpos($comment->body, ':+1:')
-            ) {
-                ++$pluses;
-                $blocker = false;
+            // parse and count aprovals
+            foreach ($this->validPositiveReviewMessages as $positiveMessage) {
+                if (false !== strpos($comment->body, $positiveMessage)) {
+                    ++$pluses;
+                    $blocker = false;
+                }
             }
-            if (false !== strpos($comment->body, '[B]') ||
-                false !== strpos($comment->body, '[b]')
-            ) {
-                echo("Blocker found\n");
+            // parse refusals
+            foreach ($this->ValidBlockerMessages as $blockerMessage) {
+                if (false !== strpos($comment->body, $blockerMessage)
+                ) {
+                    echo("Blocker found\n");
 
-                return false;
+                    $blocker = true;
+                    break;
+                }
             }
         }
 
-        if ($pluses >= self::REQUIRED_POSITIVE_REVIEWS && $blocker == false) {
+        if ($pluses >= self::REQUIRED_POSITIVE_REVIEWS && !$blocker) {
             return true;
         }
 
