@@ -2,25 +2,13 @@
 namespace Command;
 
 use \Library\GitHub;
+use \Library;
 
 /**
  * this is the basic class used to check our pull requests
  */
 class Merge
 {
-    const FORCE_BUILD_CONFIRMATION = false; // true if you want to ensure your CI suite marked this PR as stable
-    const MAX_OPEN_PULL_REQUESTS = 25;
-    const HIPCHAT_TOKEN = 'e1'; // this is the hipchat token of the room you want to be notified
-    const REQUIRED_POSITIVE_REVIEWS = 1; // this is the number of positive reviews you require to merge the pull request
-
-    protected $validPositiveCodeReviewMessages = array(":+1:", "+1");
-    protected $validBlockerCodeReviewMessages = array("[B]", "[b]");
-    protected $validUatOKMessages = array("UAT OK");
-
-    protected $user = "myUser";
-    protected $password = "myPass";
-    protected $owner = 'Company';
-    protected $repo = 'repo';
     protected $_client;
 
 
@@ -43,29 +31,27 @@ class Merge
 
         $startTime = microtime(true);
 
-//        \Library\GitHub\GitHubAutoloader::getInstance();
-
         if (!empty($user)) {
-            $this->user = $user;
+            $this->config->set("github_user",$user);
         }
         if (!empty($password)) {
-            $this->password = $password;
+            $this->config->set("github_password",$password);
         }
 
         if (!empty($owner)) {
-            $this->owner = $owner;
+            $this->config->set("github_repository_owner",$owner);
         }
 
         if (!empty($repo)) {
-            $this->repo = $repo;
+            $this->config->set("github_repository_name",$repo);
         }
 
 
         $this->_client = new \Library\GitHub\GitHubApi(new  \Library\GitHub\GitHubCurl());
 
         $this->_client->auth(
-            $this->user,
-            $this->password,
+            $this->config->get("github_user"),
+            $this->config->get("github_password"),
             \Library\GitHub\GitHubApi::AUTH_HTTP
         );
         $requestsList = $this->_getOpenPullRequests();
@@ -97,12 +83,12 @@ class Merge
             $prs = $this->_client->get(
                 '/repos/:owner/:repo/pulls',
                 array(
-                    'owner' => $this->owner,
-                    'repo' => $this->repo
+                    'owner' => $this->config->get("github_repository_owner"),
+                    'repo' => $this->config->get("github_repository_name")
                 )
             );
 
-            if (count($prs) >= self::MAX_OPEN_PULL_REQUESTS) {
+            if (count($prs) >= $this->config->get("max_open_pull_requests")) {
                 $this->_sendMessage(
                     "Hey! @all We have " . count($prs) .
                         " review code or die!!"
@@ -130,8 +116,8 @@ class Merge
         $prs = $this->_client->get(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
-                'owner' => $this->owner,
-                'repo' => $this->repo,
+                'owner' => $this->config->get("github_repository_owner"),
+                'repo' => $this->config->get("github_repository_name"),
                 'number' => $number
             )
         );
@@ -151,8 +137,8 @@ class Merge
             $this->_client->put(
                 '/repos/:owner/:repo/pulls/:number/merge',
                 array(
-                    'owner' => $this->owner,
-                    'repo' => $this->repo,
+                    'owner' => $this->config->get("github_repository_owner"),
+                    'repo' => $this->config->get("github_repository_name"),
                     'number' => $number
                 ),
                 array(
@@ -225,7 +211,7 @@ class Merge
     {
         $pluses = 0;
         $blocker = false;
-        if (!$this->_isBuildOk($sha) and self::FORCE_BUILD_CONFIRMATION) {
+        if (!$this->_isBuildOk($sha) and $this->config->get("force_build_confirmation")) {
             echo("Pull request $pullRequestNumber has no build success confirmation message \n");
 
             return false;
@@ -245,7 +231,7 @@ class Merge
             }
         }
 
-        if ($pluses >= self::REQUIRED_POSITIVE_REVIEWS && !$blocker) {
+        if ($pluses >= $this->config->get("required_possitive_reviews") && !$blocker) {
             return true;
         }
 
@@ -271,8 +257,8 @@ class Merge
         $response = $this->_client->get(
             '/repos/:owner/:repo/statuses/:sha',
             array(
-                'owner' => $this->owner,
-                'repo' => $this->repo,
+                'owner' => $this->config->get("github_repository_owner"),
+                'repo' => $this->config->get("github_repository_name"),
                 'sha' => $sha
             )
         );
@@ -295,8 +281,8 @@ class Merge
         $this->_client->post(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
-                'owner' => $this->owner,
-                'repo' => $this->repo,
+                'owner' => $this->config->get("github_repository_owner"),
+                'repo' => $this->config->get("github_repository_name"),
                 'number' => $number
             ),
             array(
@@ -333,8 +319,8 @@ class Merge
             $prs = $this->_client->get(
                 '/repos/:owner/:repo/pulls/:number',
                 array(
-                    'owner' => $this->owner,
-                    'repo' => $this->repo,
+                    'owner' => $this->config->get("github_repository_owner"),
+                    'repo' => $this->config->get("github_repository_name"),
                     'number' => $pullRequestNumber
                 )
             );
@@ -343,7 +329,7 @@ class Merge
                 $jiraIssue = $matches[0];
             }
         } catch (GitHubCommonException $e) {
-            echo "Exception: $e , request: /repos/" . $this->owner . "/" . $this->repo . "/pulls/" . $pullRequestNumber . "/";
+            echo "Exception: $e , request: /repos/" . $this->config->get("github_repository_owner") . "/" . $this->config->get("github_repository_name") . "/pulls/" . $pullRequestNumber . "/";
         }
         $jiraIssue = trim($jiraIssue, "#");
 
@@ -353,7 +339,7 @@ class Merge
 
     private function _isACodeReviewOK($comment)
     {
-        foreach ($this->validPositiveCodeReviewMessages as $positiveMessage) {
+        foreach ($this->$this->config->get("valid_positive_code_review_messages") as $positiveMessage) {
             if (false !== strpos($comment->body, $positiveMessage)) {
                 return true;
             }
@@ -365,7 +351,7 @@ class Merge
     private function _isACodeReviewKO($comment)
     {
 
-        foreach ($this->validBlockerCodeReviewMessages as $blockerMessage) {
+        foreach ($this->$this->config->get("valid_blocker_code_review_messages") as $blockerMessage) {
             if (false !== strpos($comment->body, $blockerMessage)
             ) {
                 return true;
@@ -377,7 +363,7 @@ class Merge
 
     private function _isAUatOK($comment)
     {
-        foreach ($this->validUatOKMessages as $uatOKMessage) {
+        foreach ($this->$this->config->get("valid_uat_ok_messages") as $uatOKMessage) {
             if (false !== strpos(strtolower($comment->body), strtolower($uatOKMessage))
             ) {
                 return true;
