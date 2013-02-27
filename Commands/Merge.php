@@ -27,6 +27,8 @@ class Merge
     public function pullRequest($user = null, $password = null, $owner = null, $repo = null)
     {
 
+        $startTime = microtime(true);
+
         GitHubAutoloader::getInstance();
 
         if (!empty($user)) {
@@ -64,6 +66,9 @@ class Merge
             $this->_mergePullRequest($pullRequest->number);
             break;
         }
+        $endTime = microtime(true);
+        $time = sprintf("%0.2f", $endTime - $startTime);
+        echo ("Process finished: Parsed " . count($requestsList) . " open pull requests in $time seconds\n");
     }
 
 
@@ -93,7 +98,7 @@ class Merge
             return $prs;
 
         } catch (\Exception $e) {
-            echo $e;
+            echo "$e\n";
 
             return array();
         }
@@ -111,8 +116,8 @@ class Merge
         $prs = $this->_client->get(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
-                'owner' => self::OWNER,
-                'repo' => self::REPO,
+                'owner' => $this->owner,
+                'repo' => $this->repo,
                 'number' => $number
             )
         );
@@ -132,20 +137,20 @@ class Merge
             $this->_client->put(
                 '/repos/:owner/:repo/pulls/:number/merge',
                 array(
-                    'owner' => self::OWNER,
-                    'repo' => self::REPO,
+                    'owner' => $this->owner,
+                    'repo' => $this->repo,
                     'number' => $number
                 ),
                 array(
                     'message' => 'test',
                 )
             );
-            echo("Merged pull $number");
+            echo("Merged pull $number\n");
 
         } catch (\Exception $e) {
             $ex = json_decode($e->getMessage());
             $this->_addCommentToPullRequest($number, $ex->message);
-            echo("Can't merge $number");
+            echo("Can't merge $number\n");
 
         }
 
@@ -169,7 +174,7 @@ class Merge
         $blocker = false;
         if (!$this->_isBuildOk($sha)) {
 //          $this->_addCommentToPullRequest($number,'Build failed');
-            echo("Will not merge pull request $number, build failed ");
+            echo("Will not merge pull request $number, no build success confirmation message \n");
 
             return false;
         }
@@ -185,7 +190,7 @@ class Merge
             if (false !== strpos($comment->body, '[B]') ||
                 false !== strpos($comment->body, '[b]')
             ) {
-                echo("Blocker found");
+                echo("Blocker found\n");
 
                 return false;
             }
@@ -197,7 +202,7 @@ class Merge
 
 //  enable the next line if you want the script to notify you on the hipchat Room
 //        $this->_addCommentToPullRequest($number,"Will not merge pull request $number,only $pluses positive reviews");
-        echo("Will not merge pull request $number,only $pluses positive reviews");
+        echo("Will not merge pull request $number,only $pluses positive reviews\n");
 
         return false;
     }
@@ -214,14 +219,14 @@ class Merge
         $response = $this->_client->get(
             '/repos/:owner/:repo/statuses/:sha',
             array(
-                'owner' => self::OWNER,
-                'repo' => self::REPO,
+                'owner' => $this->owner,
+                'repo' => $this->repo,
                 'sha' => $sha
             )
         );
-        $last = $response[0];
+        $last = isset($response[0]) ? $response[0] : null;
 
-        return ($last->state == 'success');
+        return (!empty($last) && $last->state == 'success');
     }
 
 
@@ -235,8 +240,8 @@ class Merge
         $this->_client->post(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
-                'owner' => self::OWNER,
-                'repo' => self::REPO,
+                'owner' => $this->owner,
+                'repo' => $this->repo,
                 'number' => $number
             ),
             array(
@@ -258,8 +263,8 @@ class Merge
             $hc = new HipChat(self::HIPCHAT_TOKEN);
             $hc->message_room('work', 'Pull-Requester', $msg, false, HipChat::COLOR_RED);
         } catch (\Exception $e) {
-            echo "\nHIPCHAT API NOT RESPONDING";
-            echo $e;
+            echo "\nHIPCHAT API NOT RESPONDING\n";
+            echo "$e\n";
         }
     }
 
