@@ -195,7 +195,7 @@ class Merge
             echo "cannot find jira issue number for PR $pullRequestNumber, we use a fake branch name";
         }
         $shellCommand = "./prepareTestEnv.sh $pullRequestNumber $jiraIssueNumber";
-        echo "Preparing local branch $jiraIssueNumber merging master branch with pull request $pullRequestNumber";
+        echo "Preparing local branch $jiraIssueNumber merging master branch with pull request $pullRequestNumber\n";
         shell_exec($shellCommand);
     }
 
