@@ -8,7 +8,7 @@
 class Merge
 {
     const MAX_OPEN_PULL_REQUESTS = 25;
-    const HIPCHAT_TOKEN = 'e1';
+    const HIPCHAT_TOKEN = 'e1'; // this is the hipchat token of the room you want to be notified
     const REQUIRED_POSITIVE_REVIEWS = 1;
 
 
