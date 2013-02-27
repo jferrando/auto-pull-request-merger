@@ -12,7 +12,7 @@ class Merge
     const REQUIRED_POSITIVE_REVIEWS = 1; // this is the number of positive reviews you require to merge the pull request
 
     protected $validPositiveReviewMessages = array(":+1:", "+1");
-    protected $ValidBlockerMessages = array("[B]", "[b]");
+    protected $validBlockerMessages = array("[B]", "[b]");
 
     protected $user = "myUser";
     protected $password = "myPass";
@@ -190,7 +190,7 @@ class Merge
                 }
             }
             // parse refusals
-            foreach ($this->ValidBlockerMessages as $blockerMessage) {
+            foreach ($this->validBlockerMessages as $blockerMessage) {
                 if (false !== strpos($comment->body, $blockerMessage)
                 ) {
                     echo("Blocker found\n");
