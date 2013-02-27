@@ -3,6 +3,8 @@ namespace Command;
 
 use \Library\GitHub;
 use \Config;
+use \App;
+
 
 /**
  * this is the basic class used to check our pull requests
@@ -17,7 +19,7 @@ class Merge
 
     public function __construct($configFile)
     {
-        $this->config = new \Config\Config($configFile);
+        $this->config = $configFile;
     }
 
 
@@ -68,6 +70,9 @@ class Merge
         }
         $endTime = microtime(true);
         $time = sprintf("%0.2f", $endTime - $startTime);
+        if(count($requestsList)== 0){
+            App::dispatchEvent("no_pull_requests_to_parse");
+        }
         echo ("Process finished: Parsed " . count($requestsList) . " open pull requests in $time seconds\n");
     }
 
@@ -150,8 +155,7 @@ class Merge
         } catch (\Exception $e) {
             $ex = json_decode($e->getMessage());
             $this->_addCommentToPullRequest($number, $ex->message);
-            echo("Cannot merge $number\n");
-
+            App::dispatchEvent("cannot_merge_pull_request");
         }
 
     }
@@ -292,24 +296,7 @@ class Merge
     }
 
 
-    /**
-     * Send a message to hipchat
-     * @param string $msg
-     *
-     * @return null
-     */
-    protected
-    function _sendMessage(
-        $msg
-    ) {
-        try {
-            $hc = new HipChat(self::HIPCHAT_TOKEN);
-            $hc->message_room('work', 'Pull-Requester', $msg, false, HipChat::COLOR_RED);
-        } catch (\Exception $e) {
-            echo "\n HIPCHAT API NOT RESPONDING \n";
-            echo "$e \n";
-        }
-    }
+
 
     protected function _findJiraIssueNumber($pullRequestNumber)
     {
