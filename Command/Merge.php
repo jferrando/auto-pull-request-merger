@@ -28,25 +28,12 @@ class Merge
      *
      * @return int|void
      */
-    public function pullRequest($user = null, $password = null, $owner = null, $repo = null)
+    public function pullRequest($params)
     {
 
         $startTime = microtime(true);
 
-        if (!empty($user)) {
-            $this->config->set("github_user",$user);
-        }
-        if (!empty($password)) {
-            $this->config->set("github_password",$password);
-        }
-
-        if (!empty($owner)) {
-            $this->config->set("github_repository_owner",$owner);
-        }
-
-        if (!empty($repo)) {
-            $this->config->set("github_repository_name",$repo);
-        }
+        $this->config->parse($params);
 
 
         $this->_client = new \Library\GitHub\GitHubApi(new  \Library\GitHub\GitHubCurl());
