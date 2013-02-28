@@ -20,7 +20,7 @@ class ListenerHipChat implements ListenerInterface
     }
 
     /**
-     * Send a message to hipchat
+     * Send a message to HipChat
      * @param string $msg
      *
      * @return null
