@@ -95,10 +95,8 @@ class Merge
             );
 
             if (count($prs) >= $this->config->get("max_open_pull_requests")) {
-                $this->_sendMessage(
-                    "Hey! @all We have " . count($prs) .
-                        " review code or die!!"
-                );
+                App::dispatchEvent("too_many_open_requests");
+
             }
 
             return $prs;
