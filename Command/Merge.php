@@ -325,6 +325,12 @@ class Merge
 
     }
 
+    /**
+     * Send a message to a hipChat room using a concret user
+     * @param string  $message
+     * @param string  $room
+     * @param string  $user
+     */
     protected function _sendMessageToHipChat($message,$room=null,$user=null)
     {
         $token = $this->config->get('hipchat_token');
