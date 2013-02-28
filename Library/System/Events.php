@@ -2,10 +2,11 @@
 
 namespace Library\System;
 
-class Events
+class Events extends \Library\System\Singleton
 {
+
     // events thrown by the application
-    protected static $list = array(
+    protected static $data = array(
         'cannot_merge_pull_request',
         'pull_request_merged',
         'too_many_open_pull_requests',
@@ -13,7 +14,5 @@ class Events
     );
 
 
-    public static function inPlace(){
-        return self::$list;
-    }
+
 }

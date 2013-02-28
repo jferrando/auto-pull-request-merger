@@ -40,7 +40,7 @@ class App
 
     public function loadModules()
     {
-        foreach (self::$config->get("listeners") as $module) {
+        foreach (Listener\All::inPlace() as $module) {
             $this->loadListener($module);
         }
     }
