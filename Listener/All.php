@@ -2,7 +2,7 @@
 
 namespace Listener;
 
-class All extends \Library\System\Singleton
+class All extends \Library\System\SingleData
 {
 
     protected static $data = array(

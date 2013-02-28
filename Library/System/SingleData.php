@@ -2,7 +2,7 @@
 
 namespace Library\System;
 
-class Singleton
+class SingleData
 {
 
 

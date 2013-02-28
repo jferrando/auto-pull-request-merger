@@ -2,7 +2,7 @@
 
 namespace Library\System;
 
-class Events extends \Library\System\Singleton
+class Events extends \Library\System\SingleData
 {
 
     // events thrown by the application
