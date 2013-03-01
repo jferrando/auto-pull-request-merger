@@ -74,8 +74,11 @@ class App
         }
     }
 
-    public static function Config()
+    public static function Config($key = null)
     {
+        if(!empty($key)){
+            return self::$config[$key];
+        }
         return self::$config;
     }
 
