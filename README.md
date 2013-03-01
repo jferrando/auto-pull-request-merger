@@ -13,3 +13,5 @@ USAGE:
 php mergePullRequest.php \<GitHubUser\> \<GitHubPassword\> \<owner\> \<repo\>
 
 all parameters can be set at Commands/Merge.php
+
+WARNING: THE CURRENT VERSION IS STILL WORK IN PROGRESS . PLEASE , USE 1.0 TAG FOR A SIMPLE USAGE DEMO

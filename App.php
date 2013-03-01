@@ -5,7 +5,8 @@ require_once './vendor/autoload.php';
 
 use Symfony\Component\ClassLoader\UniversalClassLoader;
 use \Listeners;
-
+use \Library;
+use \Library\System;
 
 class App
 {
@@ -24,10 +25,11 @@ class App
 
         self::$loader->registerNamespaces(
             array(
-                'Symfony' => __DIR__ . './vendor/symfony/symfony/src',
-                'Library' => __DIR__ . './Library',
-                'Command' => __DIR__ . './Command',
-                'Listener' => __DIR__ . './Listener'
+                'Symfony' => __DIR__ . '/vendor/symfony/symfony/src',
+                'Library' => __DIR__ . '/Library',
+                'Command' => __DIR__ . '/Command',
+                'Listener' => __DIR__ . '/Listener',
+                'System' => __DIR__ . '/Library/System'
             )
         );
 
@@ -38,7 +40,7 @@ class App
 
     public function loadModules()
     {
-        foreach (self::$config->get("listeners") as $module) {
+        foreach (Listener\All::inPlace() as $module) {
             $this->loadListener($module);
         }
     }
@@ -53,27 +55,31 @@ class App
     protected function registerObserver($module, $eventList)
     {
         foreach ($eventList as $event => $method) {
-            if (!in_array($event, self::$config->get("system_events"))) {
-                throw new Exception("event $event does not exist");
+            if (!in_array($event, System\Events::inPlace())) {
+                throw new Exception("You cannot subscribe to the event $event. it does not exist");
             }
         }
         self::$listener[$event][$module] = $method;
     }
 
 
-    public static function dispatchEvent($event)
+    public static function dispatchEvent($event, $params = null)
     {
-        echo $event."\n";
+        echo $event . "\n";
         if (isset(self::$listener[$event])) {
             foreach (self::$listener[$event] as $class => $method) {
                 $obj = new $class;
-                call_user_func(array($obj, $method), null);
+                call_user_func(array($obj, $method), $params);
             }
         }
     }
 
-    public static function Config()
+    public static function Config($key = null)
     {
+        if (!empty($key)) {
+            return self::$config[$key];
+        }
+
         return self::$config;
     }
 

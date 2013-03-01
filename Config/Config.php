@@ -35,4 +35,21 @@ class Config
 
         return $this;
     }
+
+    public function isDefined($key)
+    {
+        return isset(self::$data[$key]);
+    }
+
+    public function parse($params)
+    {
+
+        foreach ($params as $key => $value) {
+            if ($this->isDefined($key)) {
+                $this->set($key, $value);
+            }
+        }
+
+    }
+
 }
