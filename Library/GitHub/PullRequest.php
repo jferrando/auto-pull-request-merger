@@ -106,7 +106,8 @@ class PullRequest
 
     public function merge()
     {
-        return $this->gitHub->merge($this->number);
+        $this->gitHub->merge($this->number);
+        App::dispatchEvent("merged_pull_request", array($this->number));
     }
 
 

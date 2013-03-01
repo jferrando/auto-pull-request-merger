@@ -48,7 +48,6 @@ class Merge
 
             if ($pullRequest->canBeMerged()){
                 $pullRequest->merge();
-                break;
             }
 
         }
