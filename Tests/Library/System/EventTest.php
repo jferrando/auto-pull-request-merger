@@ -1,8 +1,6 @@
 <?php
 namespace Tests;
 
-require_once __DIR__ . "/../../App.php";
-
 
 class EventTest extends \PHPUnit_Framework_TestCase
 {
