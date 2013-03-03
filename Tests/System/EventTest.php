@@ -1,7 +1,7 @@
 <?php
 namespace Tests;
-require_once __DIR__ . "/../../App.php";
 
+require_once __DIR__ . "/../../App.php";
 
 
 class EventTest extends \PHPUnit_Framework_TestCase
@@ -12,15 +12,16 @@ class EventTest extends \PHPUnit_Framework_TestCase
     {
         new \App("Config/config_ci.yaml");
         $testEvent = "test_event_title";
-        $foundEvent= false;
+        $foundEvent = false;
         $systemEvent = new \Library\System\Event;
+        $originalEventCount = count($systemEvent->inPlace());
         $systemEvent->add($testEvent);
-        foreach ($systemEvent->inPlace() as $event) {
-            if ($event == $testEvent) {
-                $foundEvent = true;
-            }
-        }
-        $this->assertTrue($foundEvent);
+        $newEventCount = $originalEventCount + 1;
+
+        $eventsInPlace = $systemEvent->inPlace();
+        $this->assertContains($testEvent, $eventsInPlace);
+        $this->assertCount($newEventCount, $eventsInPlace);
+
     }
 
 }
