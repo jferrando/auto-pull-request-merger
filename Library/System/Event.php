@@ -24,7 +24,7 @@ class Event extends \Library\System\SingleData
      * @param string $event event title to add
      * @return bool the event has been added
      */
-    public function add(string $event)
+    public function add($event)
     {
 
         $eventAdded = false;
@@ -40,7 +40,7 @@ class Event extends \Library\System\SingleData
      * @param string $event ensure the object matches the required conditions: format , etc...
      * @return bool the parameter matches
      */
-    public function isValid(string $event)
+    public function isValid($event)
     {
         return is_string($event);
     }
