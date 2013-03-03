@@ -9,13 +9,13 @@ class PullRequest
 
     protected $number;
 
-    protected $gitHub;
+    protected $gitHubAdapter;
     protected $apiPullRequest;
     protected $pullRequestComments;
 
-    public function __construct($gitHub, $pullRequest)
+    public function __construct($gitHubAdapter, $pullRequest)
     {
-        $this->gitHub = $gitHub;
+        $this->gitHubAdapter = $gitHubAdapter;
         $this->apiPullRequest = $pullRequest;
         $this->number = $this->apiPullRequest->number;
         $this->sha = $this->apiPullRequest->head->sha;
@@ -43,7 +43,7 @@ class PullRequest
     public function comments()
     {
         $this->pullRequestComments = null;
-        $comments = $this->gitHub->pullRequestComments($this->number);
+        $comments = $this->gitHubAdapter->pullRequestComments($this->number);
         foreach ($comments as $pullRequestCommentApiObj) {
             $this->pullRequestComments[] = new PullRequestComment($pullRequestCommentApiObj);
         }
@@ -56,9 +56,8 @@ class PullRequest
     {
         $pluses = 0;
         $blocker = false;
-        //TODO force confirmation stuff
+
         $forceConfirmation = App::config()->get("force_build_confirmation");
-        $requiredPositiveReviews = App::config()->get("required_positive_reviews");
         if (!$this->buildIsOk() and $forceConfirmation) {
             App::log("Pull request " . $this->number . " has no build success confirmation message \n");
 
@@ -78,6 +77,7 @@ class PullRequest
             }
         }
 
+        $requiredPositiveReviews = App::config()->get("required_positive_reviews");
         if ($pluses >= $requiredPositiveReviews && !$blocker) {
             return true;
         }
@@ -96,7 +96,7 @@ class PullRequest
      */
     public function buildIsOk()
     {
-        $shaIdentifier = $this->gitHub->getStatus($this->sha);
+        $shaIdentifier = $this->gitHubAdapter->getStatus($this->sha);
 
         return (!empty($shaIdentifier) && $shaIdentifier->state == 'success');
     }
@@ -116,7 +116,7 @@ class PullRequest
 
     public function merge()
     {
-        $this->gitHub->merge($this->number);
+        $this->gitHubAdapter->merge($this->number);
         App::dispatchEvent("merged_pull_request", array($this->number));
     }
 
@@ -124,7 +124,7 @@ class PullRequest
     public function addComment($message)
     {
 
-        return $this->gitHub->addComment($this->number, $message);
+        return $this->gitHubAdapter->addComment($this->number, $message);
     }
 
     public function findIssueTrackerNumber()
