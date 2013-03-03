@@ -10,7 +10,7 @@ class EventTest extends \PHPUnit_Framework_TestCase
 
     public function testAdd()
     {
-        new \App();
+        new \App("Config/config_ci.yaml");
         $testEvent = "test_event_title";
         $foundEvent= false;
         $systemEvent = new \Library\System\Event;
