@@ -16,7 +16,7 @@ class Event extends \Library\System\SingleData
         'no_pull_requests_to_parse',
         'code_review_passed',
         'code_review_failed',
-
+        'log'
     );
 
 
