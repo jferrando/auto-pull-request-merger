@@ -55,7 +55,7 @@ class App
     protected function registerObserver($module, $eventList)
     {
         foreach ($eventList as $event => $method) {
-            if (!in_array($event, System\Events::inPlace())) {
+            if (!in_array($event, System\Event::inPlace())) {
                 throw new Exception("You cannot subscribe to the event $event. it does not exist");
             }
         }
