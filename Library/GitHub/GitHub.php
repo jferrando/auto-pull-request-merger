@@ -2,6 +2,8 @@
 
 Namespace Library\GitHub;
 
+use App;
+
 class GitHub
 {
 
@@ -33,12 +35,12 @@ class GitHub
             $prs = $this->_client->get(
                 '/repos/:owner/:repo/pulls',
                 array(
-                    'owner' => $this->owner,
+                    'owner' => $this->repositoryOwner,
                     'repo' => $this->repositoryName
                 )
             );
 
-            if (count($prs) >= $this->config->get("max_open_pull_requests")) {
+            if (count($prs) >= App::config()->get("max_open_pull_requests")) {
                 App::dispatchEvent("too_many_open_requests");
 
             }
