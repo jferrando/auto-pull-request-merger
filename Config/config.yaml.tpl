@@ -25,3 +25,6 @@ github_repository_name: 'repo'
 
 # listeners defined in the system
 listeners: ['Listener\ListenerHipChat']
+
+# file system log
+file_system_log_path: '/tmp/myPRMerger.log'
