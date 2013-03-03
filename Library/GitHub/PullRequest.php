@@ -2,6 +2,8 @@
 
 namespace Library\GitHub;
 
+use App;
+
 class PullRequest
 {
 
@@ -20,26 +22,30 @@ class PullRequest
 
     }
 
-
     public function canBeMerged()
     {
+        $canBeMerged = false;
         if ($this->hasPassedCodeReview()) {
-            App::dispatchEvent("passed_code_review");
+            App::dispatchEvent("code_review_passed", array($this->number));
             if ($this->hasPassedUAT()) {
                 App::dispatchEvent("pull_request_can_be_merged");
 
-                return true;
+                $canBeMerged = true;
             }
 
-            return false;
+            return $canBeMerged;
         }
     }
 
+    /**
+     * @return array of Library\Github\PullRequestComment
+     */
     public function comments()
     {
-
-        if (empty($this->pullRequestComments)) {
-            $this->pullRequestComments = $this->gitHub->pullRequestComments($this->number);
+        $this->pullRequestComments = null;
+        $comments = $this->gitHub->commentsInPullRequest($this->number);
+        foreach ($comments as $pullRequestCommentApiObj) {
+            $this->pullRequestComments[] = new PullRequestComment($pullRequestCommentApiObj);
         }
 
         return $this->pullRequestComments;
@@ -52,21 +58,20 @@ class PullRequest
         $blocker = false;
         //TODO force confirmation stuff
         $forceConfirmation = App::config()->get("force_build_confirmation");
-        $requiredPositiveReviews = App::config()->get("required_possitive_reviews");
+        $requiredPositiveReviews = App::config()->get("required_positive_reviews");
         if (!$this->buildIsOk() and $forceConfirmation) {
-            echo("Pull request " . $this->number . " has no build success confirmation message \n");
+            App::log("Pull request " . $this->number . " has no build success confirmation message \n");
 
             return false;
         }
 
         foreach ($this->comments() as $comment) {
-            if ($this->_isACodeReviewOK($comment)) {
+            if ($comment->isAValidCodeReviewOKComment()) {
                 ++$pluses;
                 $blocker = false;
             } else {
-                if ($this->_isACodeReviewKO($comment)) {
-                    echo("Blocker found\n");
-
+                if ($comment->isAValidCodeReviewBlockerComment($comment)) {
+                    App::log("Blocker found");
                     $blocker = true;
                     break;
                 }
@@ -81,10 +86,14 @@ class PullRequest
             $this->number,
             "Will not merge pull request " . $this->number . ",only $pluses positive reviews"
         );
-        echo("Pull request " . $this->number . " has only $pluses positive reviews\n");
+        App::log("Pull request " . $this->number . " has only $pluses positive reviews\n");
 
     }
 
+
+    /**
+     * @return bool CI suite confirms the build is OK to be merged
+     */
     public function buildIsOk()
     {
         $shaIdentifier = $this->gitHub->getStatus($this->sha);
@@ -104,6 +113,7 @@ class PullRequest
         return false;
     }
 
+
     public function merge()
     {
         $this->gitHub->merge($this->number);
@@ -117,5 +127,17 @@ class PullRequest
         return $this->gitHub->addComment($this->number, $message);
     }
 
+    public function findIssueTrackerNumber()
+    {
+        $issueNumber = null;
+        $title = $this->apiPullRequest->title;
+        if (preg_match(App::config()->get("issue_tracker_number_format"), $title, $matches)) {
+            $issueNumber = $matches[0];
+        }
+        $issueNumber = trim($issueNumber, "#");
+
+        return $issueNumber;
+
+    }
 
 }

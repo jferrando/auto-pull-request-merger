@@ -28,3 +28,7 @@ listeners: ['Listener\ListenerHipChat']
 
 # file system log
 file_system_log_path: '/tmp/myPRMerger.log'
+
+# example for jira
+issue_tracker_number_format: "/\#[A-Za-z]+\-[0-9]+/"
+
