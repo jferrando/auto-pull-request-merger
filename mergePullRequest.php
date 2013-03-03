@@ -13,7 +13,6 @@ $params["repo"] = isset($argv[4]) ? $argv[4] : null;
 $configFile = "./Config/Config.yaml";
 
 $app = new App();
-$app->start();
 
 $merge =  new Command\Merge(App::Config());
 $merge->pullRequest($params);
