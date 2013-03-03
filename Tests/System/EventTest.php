@@ -4,7 +4,7 @@ require_once __DIR__ . "/../../App.php";
 
 
 
-class TestEvent extends \PHPUnit_Framework_TestCase
+class EventTest extends \PHPUnit_Framework_TestCase
 {
 
 
