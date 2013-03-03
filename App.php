@@ -20,7 +20,6 @@ class App
     protected static $singleton;
 
 
-
     public function __construct($configFile = "Config/config.yaml")
     {
         $this->loader = new UniversalClassLoader();
@@ -38,7 +37,7 @@ class App
         );
 
         $this->loader->register();
-        $this->config = new \Config\Config($configFile);
+        $this->config = new \Config\Config(__DIR__ . "/" . $configFile);
         $this->loadModules();
     }
 
@@ -101,7 +100,7 @@ class App
 
     public static function log($message)
     {
-        self::dispatchEvent("log",$message);
+        self::dispatchEvent("log", $message);
     }
 
 }
