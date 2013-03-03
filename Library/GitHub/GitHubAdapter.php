@@ -4,7 +4,7 @@ Namespace Library\GitHub;
 
 use App;
 
-class GitHub
+class GitHubAdapter
 {
 
     protected $_client;
@@ -55,7 +55,7 @@ class GitHub
     }
 
 
-    public function commentsInPullRequest($pullRequestNumber)
+    public function pullRequestComments($pullRequestNumber)
     {
         $prs = $this->_client->get(
             '/repos/:owner/:repo/issues/:number/comments',

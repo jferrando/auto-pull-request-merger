@@ -16,11 +16,11 @@ class Merge
     protected $config;
 
 
-    public function __construct(\Config\Config $configObject, \Library\GitHub\Github $gitHub = null)
+    public function __construct(\Config\Config $configObject, \Library\GitHub\GitHubAdapter $gitHub = null)
     {
         $this->config = $configObject;
         $this->_client = new \Library\GitHub\GitHubApi(new  \Library\GitHub\GitHubCurl());
-        $this->gitHub = new \Library\GitHub\GitHub(
+        $this->gitHub = new \Library\GitHub\GitHubAdapter(
             $this->config->get("github_user"),
             $this->config->get("github_password"),
             $this->config->get("github_repository_owner"),
