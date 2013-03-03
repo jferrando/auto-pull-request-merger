@@ -4,22 +4,33 @@ Namespace Library\GitHub;
 
 use App;
 
-class GitHubAdapter
+class GitHubAdapter extends \Library\Base
 {
 
     protected $_client;
 
     protected $repositoryName;
-    protected $owner;
+    protected $repositoryOwner;
+    protected $user;
+    protected $password;
 
     public function __construct($user, $password, $repositoryOwner, $repositoryName)
     {
         $this->repositoryName = $repositoryName;
         $this->repositoryOwner = $repositoryOwner;
-        $this->_client = new GitHubApi(new GitHubCurl());
+        $this->user = $user;
+        $this->password = $password;
+
+    }
+
+    public function auth()
+    {
+        if (empty($this->_client)) {
+            $this->_client = new GitHubApi(new GitHubCurl());
+        }
         $this->_client->auth(
-            $user,
-            $password,
+            $this->user,
+            $this->password,
             \Library\GitHub\GitHubApi::AUTH_HTTP
         );
     }
@@ -31,7 +42,7 @@ class GitHubAdapter
     public function openPullRequests()
     {
         try {
-
+            $this->auth();
             $prs = $this->_client->get(
                 '/repos/:owner/:repo/pulls',
                 array(
@@ -48,15 +59,16 @@ class GitHubAdapter
             return $prs;
 
         } catch (\Exception $e) {
-            echo "$e\n";
-
-            return array();
+            App::log($e);
+            return null;
         }
     }
 
 
     public function pullRequestComments($pullRequestNumber)
     {
+        $this->auth();
+
         $prs = $this->_client->get(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
@@ -73,6 +85,8 @@ class GitHubAdapter
 
     public function getStatus($sha)
     {
+        $this->auth();
+
         $response = $this->_client->get(
             '/repos/:owner/:repo/statuses/:sha',
             array(
@@ -91,6 +105,7 @@ class GitHubAdapter
     {
 
         try {
+            $this->auth();
             $this->_client->put(
                 '/repos/:owner/:repo/pulls/:number/merge',
                 array(
@@ -102,7 +117,7 @@ class GitHubAdapter
                     'message' => 'test',
                 )
             );
-            echo("Merged pull $number\n");
+            App::log("Merged pull $number");
 
         } catch (\Exception $e) {
             $ex = json_decode($e->getMessage());
@@ -114,6 +129,8 @@ class GitHubAdapter
 
     public function addComment($number, $message)
     {
+        $this->auth();
+
         $this->_client->post(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
@@ -128,8 +145,10 @@ class GitHubAdapter
 
     }
 
-    public function getPullRequestComments($number){
+    public function getPullRequestComments($number)
+    {
         $pullRequestComments = array();
+        $this->auth();
 
         $prs = $this->_client->get(
             '/repos/:owner/:repo/issues/:number/comments',
