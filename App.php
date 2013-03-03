@@ -68,7 +68,7 @@ class App
 
     public static function dispatchEvent($event, $params = null)
     {
-        self::loadSingleton();
+        self::loadAppSingleton();
 
         if (isset(self::$singleton->listener[$event])) {
             foreach (self::$singleton->listener[$event] as $class => $method) {
@@ -80,7 +80,7 @@ class App
 
     public static function Config($key = null)
     {
-        self::loadSingleton();
+        self::loadAppSingleton();
 
         if (!empty($key)) {
             return self::$singleton->config[$key];
@@ -89,7 +89,7 @@ class App
         return self::$singleton->config;
     }
 
-    public static function loadSingleton()
+    public static function loadAppSingleton()
     {
         // system log event
         if (empty(self::$singleton)) {
