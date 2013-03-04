@@ -107,7 +107,6 @@ class App
 
     public function dispatch($event, $params = null)
     {
-        echo "dspatch $event\n"; die();
         if (isset($this->listener[$event])) {
             foreach ($this->listener[$event] as $class => $method) {
                 $obj = new $class;
