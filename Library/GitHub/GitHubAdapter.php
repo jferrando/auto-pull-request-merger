@@ -120,14 +120,13 @@ class GitHubAdapter extends \Library\Base
                     'number' => $number
                 ),
                 array(
-                    'message' => 'test',
+                    'message' => 'merged automatically',
                 )
             );
             App::log("Merged pull $number");
 
         } catch (\Exception $e) {
             $ex = json_decode($e->getMessage());
-            $this->_addCommentToPullRequest($number, $ex->message);
             App::dispatchEvent("cannot_merge_pull_request");
         }
 

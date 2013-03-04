@@ -106,33 +106,7 @@ class GitHubAdapterTest extends \Tests\BaseTestDefinition
     }
 
 
-    public function getStatusTest()
-    {
-        $shaTest = "abcd";
-        $gitHubAdapter = new \Library\GitHub\GitHubAdapter($this->config);
 
-
-        $gitHubApiMock = \Phake::mock("\\Library\\GitHub\\GitHubApi");
-        $mockShaStatusResponse = unserialize (file_get_contents($this->fixturesPath . "pullsResponseWithMoreThan10PR.txt"));
-
-        Phake::when($gitHubApiMock)->get(
-            '/repos/:owner/:repo/statuses/:sha',
-            array(
-                'owner' => $this->repositoryOwner,
-                'repo' => $this->repositoryName,
-                'sha' => $shaTest
-            )
-        )->thenReturn($mockShaStatusResponse);
-
-
-        \App::singleton($this->app);
-
-        $gitHubAdapter->addDependency("gitHubApi", $gitHubApiMock);
-        $gitHubAdapter->getStatus($shaTest);
-
-
-
-    }
 
     public function testMerge()
     {
