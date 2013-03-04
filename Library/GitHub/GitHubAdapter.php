@@ -128,7 +128,7 @@ class GitHubAdapter extends \Library\Base
 
         } catch (\Exception $e) {
             $ex = json_decode($e->getMessage());
-            App::dispatchEvent("cannot_merge_pull_request", $ex);
+            App::dispatchEvent("cannot_merge_pull_request", $e->getMessage());
         }
 
     }
