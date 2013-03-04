@@ -151,24 +151,4 @@ class GitHubAdapter extends \Library\Base
 
     }
 
-    public function getPullRequestComments($number)
-    {
-        $pullRequestComments = array();
-        $this->auth();
-
-        $prs = $this->_gitHubApi->get(
-            '/repos/:owner/:repo/issues/:number/comments',
-            array(
-                'owner' => $this->repositoryOwner,
-                'repo' => $this->repositoryName,
-                'number' => $number
-            )
-        );
-        foreach ($prs as $pr) {
-            $pullRequestComments[] = new PullRequestComment($pr);
-        }
-
-        return $pullRequestComments;
-    }
-
 }

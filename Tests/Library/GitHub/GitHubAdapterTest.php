@@ -119,10 +119,5 @@ class GitHubAdapterTest extends \Tests\BaseTestDefinition
 
     }
 
-    public function testGetPullRequestComments()
-    {
-
-    }
-
 
 }
