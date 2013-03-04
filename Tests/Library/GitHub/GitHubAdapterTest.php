@@ -179,10 +179,5 @@ class GitHubAdapterTest extends \Tests\BaseTestDefinition
         $this->assertEquals("This is a test with verifications", "This is a test with verifications");
     }
 
-    public function testAddComment()
-    {
-
-    }
-
 
 }
