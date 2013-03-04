@@ -52,4 +52,9 @@ class Config
 
     }
 
+    public function all()
+    {
+        return $this->data;
+    }
+
 }

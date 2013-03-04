@@ -16,13 +16,10 @@ class Merge
     public function __construct()
     {
         $this->_client = new \Library\GitHub\GitHubApi(new  \Library\GitHub\GitHubCurl());
-        $this->gitHub = new \Library\GitHub\GitHubAdapter(
-            App::Config()->get("github_user"),
-            App::Config()->get("github_password"),
-            App::Config()->get("github_repository_owner"),
-            App::Config()->get("github_repository_name")
-
+        $this->gitHubAdapter = new \Library\GitHub\GitHubAdapter(
+            App::config()
         ) ;
+        $this->gitHubAdapter->addDependency("gitHubApi", new \Library\GitHub\GitHubApi(new \Library\GitHub\GitHubCurl()));
 
     }
 
@@ -38,9 +35,9 @@ class Merge
         $startTime = microtime(true);
 
 
-        $requestsList = $this->gitHub->openPullRequests();
+        $requestsList = $this->gitHubAdapter->openPullRequests();
         for ($i = count($requestsList) - 1; $i >= 0; $i--) {
-            $pullRequest = new \Library\GitHub\PullRequest($this->gitHub, $requestsList[$i]);
+            $pullRequest = new \Library\GitHub\PullRequest($this->gitHubAdapter, $requestsList[$i]);
 
             if ($pullRequest->canBeMerged()){
                 $pullRequest->merge();

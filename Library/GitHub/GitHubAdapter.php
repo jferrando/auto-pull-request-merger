@@ -7,28 +7,26 @@ use App;
 class GitHubAdapter extends \Library\Base
 {
 
-    protected $_client;
+    protected $_gitHubApi;
 
     protected $repositoryName;
     protected $repositoryOwner;
     protected $user;
     protected $password;
 
-    public function __construct($user, $password, $repositoryOwner, $repositoryName)
+    public function __construct( \Config\Config $config)
     {
-        $this->repositoryName = $repositoryName;
-        $this->repositoryOwner = $repositoryOwner;
-        $this->user = $user;
-        $this->password = $password;
+        $this->config = $config;
+        $this->repositoryName = $config->get("github_repository_name");
+        $this->repositoryOwner = $config->get("github_repository_owner");
+        $this->user = $config->get("github_user");
+        $this->password = $config->get("github_password");
 
     }
 
     public function auth()
     {
-        if (empty($this->_client)) {
-            $this->_client = new GitHubApi(new GitHubCurl());
-        }
-        $this->_client->auth(
+        $this->_gitHubApi->auth(
             $this->user,
             $this->password,
             \Library\GitHub\GitHubApi::AUTH_HTTP
@@ -43,15 +41,14 @@ class GitHubAdapter extends \Library\Base
     {
         try {
             $this->auth();
-            $prs = $this->_client->get(
+            $prs = $this->_gitHubApi->get(
                 '/repos/:owner/:repo/pulls',
                 array(
                     'owner' => $this->repositoryOwner,
                     'repo' => $this->repositoryName
                 )
             );
-
-            if (count($prs) >= App::config()->get("max_open_pull_requests")) {
+            if (count($prs) >= $this->config->get("max_open_pull_requests")) {
                 App::dispatchEvent("too_many_open_requests");
 
             }
@@ -64,12 +61,16 @@ class GitHubAdapter extends \Library\Base
         }
     }
 
-
+    /**
+     * @param $pullRequestNumber
+     * @return mixed
+     * @IgnoreCodeCoverage
+     */
     public function pullRequestComments($pullRequestNumber)
     {
         $this->auth();
 
-        $prs = $this->_client->get(
+        $prs = $this->_gitHubApi->get(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
                 'owner' => $this->repositoryOwner,
@@ -82,12 +83,17 @@ class GitHubAdapter extends \Library\Base
 
     }
 
-
+    /**
+     *
+     * get build status
+     * @param $sha
+     * @return null
+     */
     public function getStatus($sha)
     {
         $this->auth();
 
-        $response = $this->_client->get(
+        $response = $this->_gitHubApi->get(
             '/repos/:owner/:repo/statuses/:sha',
             array(
                 'owner' => $this->repositoryOwner,
@@ -106,7 +112,7 @@ class GitHubAdapter extends \Library\Base
 
         try {
             $this->auth();
-            $this->_client->put(
+            $this->_gitHubApi->put(
                 '/repos/:owner/:repo/pulls/:number/merge',
                 array(
                     'owner' => $this->repositoryOwner,
@@ -131,7 +137,7 @@ class GitHubAdapter extends \Library\Base
     {
         $this->auth();
 
-        $this->_client->post(
+        $this->_gitHubApi->post(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
                 'owner' => $this->repositoryOwner,
@@ -150,7 +156,7 @@ class GitHubAdapter extends \Library\Base
         $pullRequestComments = array();
         $this->auth();
 
-        $prs = $this->_client->get(
+        $prs = $this->_gitHubApi->get(
             '/repos/:owner/:repo/issues/:number/comments',
             array(
                 'owner' => $this->repositoryOwner,

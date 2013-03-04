@@ -2,13 +2,19 @@
 namespace Tests;
 
 
-class EventTest extends \PHPUnit_Framework_TestCase
+class EventTest extends BaseTestDefinition
 {
+    protected $app;
 
+    public function setUp()
+    {
+        parent::setUp();
+    }
 
     public function testAdd()
     {
-        new \App("Config/config_ci.yaml");
+
+
         $testEvent = "test_event_title";
         $foundEvent = false;
         $systemEvent = new \Library\System\Event;

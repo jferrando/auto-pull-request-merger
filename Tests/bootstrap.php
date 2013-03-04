@@ -7,3 +7,18 @@ if (!file_exists($file)) {
 
 require_once $file;
 require_once __DIR__ . "/../App.php";
+use Symfony\Component\ClassLoader\UniversalClassLoader;
+
+
+$classLoader = new UniversalClassLoader();
+$classLoader->useIncludePath(true);
+$classLoader->registerNamespaces(
+    array(
+        'Symfony' => __DIR__ . '/vendor/symfony/symfony/src',
+        'Library' => __DIR__ . '/Library',
+        'Command' => __DIR__ . '/Command',
+        'Listener' => __DIR__ . '/Listener',
+        'System' => __DIR__ . '/Library/System'
+    )
+);
+$classLoader->register();
