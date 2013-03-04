@@ -11,19 +11,22 @@ use \Library\System;
 class App
 {
 
-    protected static $loader;
+    protected $loader;
 
-    protected static $config;
+    protected $config;
 
-    protected static $listener;
+    protected $listener;
 
-    public function start($configFile = "Config/config.yaml")
+    protected static $singleton;
+
+
+    public function __construct($configFile = "Config/config.yaml")
     {
-        self::$loader = new UniversalClassLoader();
+        $this->loader = new UniversalClassLoader();
 
-        self::$loader->useIncludePath(true);
+        $this->loader->useIncludePath(true);
 
-        self::$loader->registerNamespaces(
+        $this->loader->registerNamespaces(
             array(
                 'Symfony' => __DIR__ . '/vendor/symfony/symfony/src',
                 'Library' => __DIR__ . '/Library',
@@ -33,8 +36,8 @@ class App
             )
         );
 
-        self::$loader->register();
-        self::$config = new \Config\Config($configFile);
+        $this->loader->register();
+        $this->config = new \Config\Config(__DIR__ . "/" . $configFile);
         $this->loadModules();
     }
 
@@ -55,19 +58,20 @@ class App
     protected function registerObserver($module, $eventList)
     {
         foreach ($eventList as $event => $method) {
-            if (!in_array($event, System\Events::inPlace())) {
+            if (!in_array($event, System\Event::inPlace())) {
                 throw new Exception("You cannot subscribe to the event $event. it does not exist");
             }
         }
-        self::$listener[$event][$module] = $method;
+        $this->listener[$event][$module] = $method;
     }
 
 
     public static function dispatchEvent($event, $params = null)
     {
-        echo $event . "\n";
-        if (isset(self::$listener[$event])) {
-            foreach (self::$listener[$event] as $class => $method) {
+        self::loadSingleton();
+
+        if (isset(self::$singleton->listener[$event])) {
+            foreach (self::$singleton->listener[$event] as $class => $method) {
                 $obj = new $class;
                 call_user_func(array($obj, $method), $params);
             }
@@ -76,11 +80,27 @@ class App
 
     public static function Config($key = null)
     {
+        self::loadSingleton();
+
         if (!empty($key)) {
-            return self::$config[$key];
+            return self::$singleton->config[$key];
         }
 
-        return self::$config;
+        return self::$singleton->config;
+    }
+
+    public static function loadSingleton()
+    {
+        // system log event
+        if (empty(self::$singleton)) {
+            self::$singleton = new App();
+        }
+
+    }
+
+    public static function log($message)
+    {
+        self::dispatchEvent("log", $message);
     }
 
 }

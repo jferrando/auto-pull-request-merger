@@ -17,18 +17,14 @@ valid_blocker_code_review_messages: ["[B]", "[b]" ]
 valid_uat_ok_messages: ["UAT OK"]
 
 # GitHub repository info
-github_user: 'myUser'
-github_password: 'myPass'
-github_repository_owner: 'Company'
-github_repository_name: 'repo'
-
-
-# listeners defined in the system
-listeners: ['Listener\ListenerHipChat']
+github_user: 'myuser'
+github_password: 'mypass'
+github_repository_owner: 'fpalomo'
+github_repository_name: 'auto-pull-request-merger'
 
 # file system log
 file_system_log_path: '/tmp/myPRMerger.log'
 
+
 # example for jira
 issue_tracker_number_format: "/\#[A-Za-z]+\-[0-9]+/"
-

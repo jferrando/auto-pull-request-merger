@@ -14,4 +14,6 @@ php mergePullRequest.php \<GitHubUser\> \<GitHubPassword\> \<owner\> \<repo\>
 
 all parameters can be set at Commands/Merge.php
 
-WARNING: THE CURRENT VERSION IS STILL WORK IN PROGRESS . PLEASE , USE 1.0 TAG FOR A SIMPLE USAGE DEMO
+WARNING: THE CURRENT VERSION IS STILL WORK IN PROGRESS . PLEASE , DOWNLOAD "STABLE" TAG FOR THE LATEST STABLE VERSION
+
+[![Build Status](https://travis-ci.org/[fpalomo]/[auto-pull-request-merger].png)](https://travis-ci.org/[fpalomo]/[auto-pull-request-merger])

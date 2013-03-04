@@ -12,20 +12,14 @@ use \App;
  */
 class Merge
 {
-
-
-    protected $config;
-
-
-    public function __construct(\Config\Config $configObject, \Library\GitHub\Github $gitHub = null)
+    public function __construct()
     {
-        $this->config = $configObject;
         $this->_client = new \Library\GitHub\GitHubApi(new  \Library\GitHub\GitHubCurl());
-        $this->gitHub = new \Library\GitHub\GitHub(
-            $this->config->get("github_user"),
-            $this->config->get("github_password"),
-            $this->config->get("github_repository_owner"),
-            $this->config->get("github_repository_name")
+        $this->gitHub = new \Library\GitHub\GitHubAdapter(
+            App::Config()->get("github_user"),
+            App::Config()->get("github_password"),
+            App::Config()->get("github_repository_owner"),
+            App::Config()->get("github_repository_name")
 
         ) ;
 
@@ -58,53 +52,5 @@ class Merge
             App::dispatchEvent("no_pull_requests_to_parse");
         }
         echo ("Process finished: Parsed " . count($requestsList) . " open pull requests in $time seconds\n");
-    }
-
-
-
-
-
-    protected function _prepareTestingEnvironment($pullRequestNumber)
-    {
-        // TODO prepare the environment
-        // basic version, only checkout the code
-        $jiraIssueNumber = $this->_findJiraIssueNumber($pullRequestNumber);
-        if (!$jiraIssueNumber) {
-            $jiraIssueNumber = "pull-request-$pullRequestNumber";
-            echo "cannot find jira issue number for PR $pullRequestNumber, we use a fake branch name";
-        }
-        $shellCommand = "./prepareTestEnv.sh $pullRequestNumber $jiraIssueNumber";
-        echo "Preparing local branch $jiraIssueNumber merging master branch with pull request $pullRequestNumber\n";
-        shell_exec($shellCommand);
-    }
-
-
-
-    protected function _findJiraIssueNumber($pullRequestNumber)
-    {
-
-        $jiraIssue = null;
-        try {
-            $prs = $this->_client->get(
-                '/repos/:owner/:repo/pulls/:number',
-                array(
-                    'owner' => $this->config->get("github_repository_owner"),
-                    'repo' => $this->config->get("github_repository_name"),
-                    'number' => $pullRequestNumber
-                )
-            );
-            $title = $prs->title;
-            if (preg_match("/\#[A-Za-z]+\-[0-9]+/", $title, $matches)) {
-                $jiraIssue = $matches[0];
-            }
-        } catch (GitHubCommonException $e) {
-            echo "Exception: $e , request: /repos/" . $this->config->get(
-                "github_repository_owner"
-            ) . "/" . $this->config->get("github_repository_name") . "/pulls/" . $pullRequestNumber . "/";
-        }
-        $jiraIssue = trim($jiraIssue, "#");
-
-        return $jiraIssue;
-
     }
 }

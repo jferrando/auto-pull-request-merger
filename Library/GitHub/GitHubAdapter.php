@@ -2,7 +2,9 @@
 
 Namespace Library\GitHub;
 
-class GitHub
+use App;
+
+class GitHubAdapter
 {
 
     protected $_client;
@@ -33,12 +35,12 @@ class GitHub
             $prs = $this->_client->get(
                 '/repos/:owner/:repo/pulls',
                 array(
-                    'owner' => $this->owner,
+                    'owner' => $this->repositoryOwner,
                     'repo' => $this->repositoryName
                 )
             );
 
-            if (count($prs) >= $this->config->get("max_open_pull_requests")) {
+            if (count($prs) >= App::config()->get("max_open_pull_requests")) {
                 App::dispatchEvent("too_many_open_requests");
 
             }
@@ -53,7 +55,7 @@ class GitHub
     }
 
 
-    public function commentsInPullRequest($pullRequestNumber)
+    public function pullRequestComments($pullRequestNumber)
     {
         $prs = $this->_client->get(
             '/repos/:owner/:repo/issues/:number/comments',
