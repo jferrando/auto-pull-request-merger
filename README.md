@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/[fpalomo]/[auto-pull-request-merger].png)](https://travis-ci.org/[fpalomo]/[auto-pull-request-merger])
+[![Build Status](https://travis-ci.org/fpalomo/auto-pull-request-merger.png)](https://travis-ci.org/fpalomo/auto-pull-request-merger)
 
 This simple script will parse every open pull request in a GitHub repository. It will check if the build is successful
 and anybody has reviewed and approved the code.
