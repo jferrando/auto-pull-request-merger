@@ -2,9 +2,13 @@
 
 namespace Library\System;
 
-class SingleData
+/**
+ * class
+ */
+abstract class SingleData
 {
 
+    protected static $data;
 
     public static function inPlace()
     {

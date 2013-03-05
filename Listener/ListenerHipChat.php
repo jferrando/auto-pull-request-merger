@@ -30,7 +30,7 @@ class ListenerHipChat implements ListenerInterface
         $msg
     ) {
         try {
-            $hc = new \Library\HipChat\HipChat(\App::Config()->get("hipchat_token"));
+            $hc = new \Library\HipChat\HipChat(\App::config()->get("hipchat_token"));
             $hc->message_room('work', 'Pull-Requester', $msg, false, \Library\Hipchat\HipChat::COLOR_RED);
         } catch (\Exception $e) {
             echo "\n HIPCHAT API NOT RESPONDING \n";

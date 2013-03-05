@@ -2,6 +2,7 @@
 
 namespace Listener;
 
+use App;
 
 class FileSystemLog
 {
@@ -15,7 +16,8 @@ class FileSystemLog
 
     public function printLn($message)
     {
-        if( true === @file_put_contents(App::config("file_system_log_path"), $message)){
+        $messageLine = "[" . date("Y-m-d H:i:s") . "] $message\n";
+        if (true === file_put_contents(App::config("file_system_log_path"), $messageLine, FILE_APPEND)) {
             return true;
         }
 

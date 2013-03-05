@@ -2,7 +2,7 @@
 force_build_confirmation: false
 
 # over this number of open pull requests the script will trigger a notification event
-max_open_pull_requests: 25
+max_open_pull_requests: 5
 
 # this is the HipChat token of the room you want to be notified
 hipchat_token: 'e1'

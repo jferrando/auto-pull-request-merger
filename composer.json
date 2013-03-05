@@ -1,7 +1,8 @@
 {
     "require":{
-        "symfony/class-loader":"2.1.*",
+        "symfony/class-loader":"2.2.*",
         "symfony/yaml":"*",
-        "phake/phake":"dev-master"
+        "phake/phake":"dev-master",
+        "symfony/dependency-injection": "v2.2.0"
     }
 }

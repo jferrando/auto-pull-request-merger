@@ -12,5 +12,5 @@ $params["repo"] = isset($argv[4]) ? $argv[4] : null;
 
 $app = new App();
 
-$merge =  new Command\Merge(App::Config());
+$merge =  new Command\Merge(App::config());
 $merge->pullRequest($params);
